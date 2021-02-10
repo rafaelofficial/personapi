@@ -9,6 +9,7 @@ import one.digitalInnovation.personapi.repository.PersonRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.PersistenceException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,9 +43,20 @@ public class PersonService {
     }
 
     public PersonDTO findById(Long id) throws PersonNotFoundException {
-         Person person = personRepository.findById(id)
-                .orElseThrow(() -> new PersonNotFoundException(id));
+         Person person = verifyIfExist(id);
 
        return personMapper.toDTO(person);
+    }
+
+    private Person verifyIfExist(Long id) throws PersonNotFoundException {
+        return personRepository.findById(id)
+                .orElseThrow(() -> new PersonNotFoundException(id));
+    }
+
+    public void delete(Long id) throws PersonNotFoundException {
+        personRepository.findById(id)
+                .orElseThrow(()-> new PersistenceException(String.valueOf(id)));
+
+        personRepository.deleteById(id);
     }
 }
